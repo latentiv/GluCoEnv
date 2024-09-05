@@ -250,12 +250,14 @@ class T1DCohort(nn.Module):
         self.t0 = torch.zeros(1, device=self.device)
 
     def matrix_2_tuple(self, matrix):
-        return torch.tensor_split(torch.flatten(torch.reshape(matrix, (1, self.n_envs * self.n_states))), self.n_envs * self.n_states)
+        return torch.split(torch.flatten(matrix), 1)
+        # return torch.tensor_split(torch.flatten(torch.reshape(matrix, (1, self.n_envs * self.n_states))), self.n_envs * self.n_states)
         # matrix = torch.flatten(torch.reshape(matrix, (1, self.n_envs * self.n_states)))
         # tuple = torch.tensor_split(matrix, self.n_envs * self.n_states)
 
     def tuple_2_matrix(self, input_tuple):
-        return torch.reshape(torch.stack(list(input_tuple), dim=1), (self.n_envs, self.n_states))
+        return torch.stack(input_tuple, dim=1).view(self.n_envs, self.n_states)
+        # return torch.reshape(torch.stack(list(input_tuple), dim=1), (self.n_envs, self.n_states))
         # matrix = torch.reshape(torch.stack(list(tuple), dim=1), (self.n_envs, self.n_states)) ==> This is implemented
         # matrix = torch.reshape(torch.tensor(tuple, device=self.device), (self.n_envs, self.n_states))  # inefficient
 

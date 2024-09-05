@@ -77,7 +77,7 @@ def make(settings=None, env=None, n_env=None, env_type=None, obs_type=None, scen
             FILE=settings)
     else:
         n_env = 1 if n_env is None else n_env
-        patients = [env] * n_env
+        patients = env * n_env
         scenario_name = 'moderate' if scenario is None else scenario
         scenario = get_scenario(scenario_name=scenario_name, n_env=n_env)
         device = 'cpu' if device is None else device
@@ -124,7 +124,7 @@ def benchmark_controller(settings=None, env=None, n_env=None, mode=None, sample_
         _, patients, _, _, _, n_env, _, _, _, _, _ = get_env_params(FILE=settings)
     else:
         n_env = n_env
-        patients = [env] * n_env
+        patients = env * n_env
     device = 'cpu' if device is None else device
     env_device = 'cpu' if env_device is None else env_device
     controller = SBB(device, patients, n_env, mode, sample_time, env_device)

@@ -8,10 +8,18 @@ states = torch.tensor([[1, 2, 3, 4],[5, 6, 7, 8], [9, 10, 11, 12]])
 print('\nThe original matrix')
 print(states)
 
+print('new way: matrix: to tuple')
+print(torch.split(torch.flatten(states), 1))
+
 #convert to tuple
 tuple_x = torch.tensor_split(torch.flatten(states), n_env*n_states)
 print('\nThe tuple of states')
 print(tuple_x)
+
+#convert to matrix 2
+print('new way: tuple to matrix:')
+print(torch.stack(tuple_x, dim=1) )
+print(torch.stack(tuple_x, dim=1).view(n_env, n_states))
 
 # convert tuple to matrix
 x = torch.reshape(torch.tensor(tuple_x), (n_env, n_states))

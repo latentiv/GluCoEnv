@@ -5,6 +5,7 @@ import torch.nn as nn
 from glucoenv.agent.utils.utils import scale_observations, scale_actions
 from glucoenv.agent.utils.buffers import RolloutBuffer
 from glucoenv.agent.ppo.models import ActorCritic
+from torch.profiler import profile, record_function, ProfilerActivity
 
 
 class PPO:
@@ -172,16 +173,49 @@ class PPO:
         while tot_steps < total_timesteps:
             tstart_sim = time.perf_counter()
             for i in range(0, self.n_step):  # run rollout
-                with torch.no_grad():
-                    rl_actions, values, log_probs = self.policy.get_action(self._last_obs)
+
+                rl_actions, values, log_probs = self.policy.get_action(self._last_obs)
+                # with torch.no_grad():
+                #     with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], record_shapes=True) as prof:
+                #         with record_function("model_inference"):
+                #             rl_actions, values, log_probs = self.policy.get_action(self._last_obs)
+                #     print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=15))
+                #     prof.export_chrome_trace("trace.json")
+                #     print(prof.key_averages(group_by_stack_n=5).table(sort_by="self_cuda_time_total", row_limit=10))
+
                 # Paper for scaling below: Non-linear Continuous Action Spaces for RL in T1D, Hettiarachchi et al.
                 actions = scale_actions(rl_actions, translation_func=self.args.action_type, max=self.args.action_scale)
+
                 new_obs, rewards, dones, infos = self.env.step(actions)
+                # with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], record_shapes=True) as prof:
+                #     with record_function("model_inference"):
+                #         new_obs, rewards, dones, infos = self.env.step(actions)
+                # print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=15))
+                # prof.export_chrome_trace("trace2.json")
+                # print(prof.key_averages(group_by_stack_n=5).table(sort_by="self_cuda_time_total", row_limit=10))
+                # exit()
+
                 new_obs = scale_observations(new_obs, [self.env.sensor.min(), 0],
-                                                [self.env.sensor.max(), self.args.action_scale])
+                                                    [self.env.sensor.max(), self.args.action_scale])
                 self.rollout_buffer.add(self._last_obs, rl_actions, rewards, self._last_episode_starts, values, log_probs)
                 self._last_obs = new_obs
                 self._last_episode_starts = dones
+
+                # with profile(activities=[ProfilerActivity.CPU], record_shapes=True) as prof:
+                #         with record_function("model_inference"):
+                #             with torch.no_grad():
+                #                 rl_actions, values, log_probs = self.policy.get_action(self._last_obs)
+                #             # Paper for scaling below: Non-linear Continuous Action Spaces for RL in T1D, Hettiarachchi et al.
+                #             actions = scale_actions(rl_actions, translation_func=self.args.action_type, max=self.args.action_scale)
+                #             new_obs, rewards, dones, infos = self.env.step(actions)
+                #             new_obs = scale_observations(new_obs, [self.env.sensor.min(), 0],
+                #                                             [self.env.sensor.max(), self.args.action_scale])
+                #             self.rollout_buffer.add(self._last_obs, rl_actions, rewards, self._last_episode_starts, values, log_probs)
+                #             self._last_obs = new_obs
+                #             self._last_episode_starts = dones
+                # print(prof.key_averages().table(sort_by="cpu_time_total"))
+                # exit()
+
             with torch.no_grad():
                 final_val = self.policy.get_final_value(new_obs)  # todo - update done
             data = self.rollout_buffer.prepare_rollout_buffer(final_val, dones)

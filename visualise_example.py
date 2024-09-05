@@ -7,9 +7,9 @@ torch.set_default_dtype(torch.float32)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--device', type=str, default='cpu')
-parser.add_argument('--agent', type=str, default='cuda')
+parser.add_argument('--agent', type=str, default='cpu')
 parser.add_argument('--n_env', type=int, default=2)
-parser.add_argument('--steps', type=int, default=5)
+parser.add_argument('--steps', type=int, default=40)
 args = parser.parse_args()
 
 if __name__ == '__main__':
@@ -23,8 +23,8 @@ if __name__ == '__main__':
     print('simulation Steps: ', steps)
 
     # demonstrate visualisation and memory
-    env = T1DEnv.make(env='adolescent#001', n_env=n_env, scenario='moderate', device=ENV_DEVICE)
-    SBB = T1DEnv.benchmark_controller(env='adolescent#001', n_env=n_env, sample_time=env.sample_time,
+    env = T1DEnv.make(env=['adolescent#001', 'adolescent#002'], n_env=n_env, scenario='moderate', device=ENV_DEVICE)
+    SBB = T1DEnv.benchmark_controller(env=['adolescent#001', 'adolescent#002'], n_env=n_env, sample_time=env.sample_time,
                                        mode='error_quadratic', device=AGENT_DEVICE)
     mem = Memory(device=ENV_DEVICE, env=env, n_steps=steps)
     action = SBB.init_action()
