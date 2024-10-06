@@ -28,6 +28,9 @@ def NormedLinear(*args, scale=1.0):
 
 def scale_observations(obs, MIN, MAX):
     print(obs.shape)
+    print(obs)
+    print(MIN)
+    print(MAX)
     obs[:, :, 0:1] = linear_scaling(obs[:, :, 0:1], MIN[0], MAX[0])
     obs[:, :, 1:2] = linear_scaling(obs[:, :, 1:2], MIN[1], MAX[1])
     return obs
