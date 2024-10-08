@@ -41,8 +41,8 @@ class PPO:
 
         self.rollout_buffer = RolloutBuffer(self.args)
         init_obs, self._last_episode_starts = self.env.reset()
-        ##self._last_obs = scale_observations(init_obs, [self.env.sensor.min(), 0],
-        ##                                    [self.env.sensor.max(), self.args.action_scale])
+        self._last_obs = scale_observations(init_obs, [self.env.sensor.min(), 0],
+                                            [self.env.sensor.max(), self.args.action_scale])
 
         self.save_log([['policy_grad', 'value_grad', 'val_loss', 'exp_var', 'true_var', 'pi_loss',
                         'epi_rew', 't_sim', 't_update', 'interactions']], '/training_logs')
